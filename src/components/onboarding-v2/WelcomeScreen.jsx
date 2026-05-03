@@ -86,6 +86,24 @@ export default function WelcomeScreen({
             <GoogleSignInButton onClick={onSignIn} loading={loading} />
           )}
 
+          {/* Dev-only escape hatch so we can click through onboarding on
+              localhost without a working OAuth setup. Stripped from prod builds. */}
+          {!authed && import.meta.env.DEV && (
+            <button
+              onClick={onContinue}
+              style={{
+                width: '100%', padding: '12px 24px', marginTop: 12,
+                borderRadius: 999, background: 'transparent',
+                border: '1px dashed rgba(255,255,255,0.25)',
+                color: 'rgba(255,255,255,0.55)', fontFamily: dmSans,
+                fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                minHeight: 'auto',
+              }}
+            >
+              Skip sign-in (dev only)
+            </button>
+          )}
+
           <p style={{
             fontFamily: dmSans, fontSize: 12, color: 'rgba(255,255,255,0.32)',
             margin: '24px 0 0', lineHeight: 1.6,

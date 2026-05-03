@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { dmSans, ORANGE, BORDER, SURFACE, TEXT, MUTED, FAINT, SUCCESS } from './theme';
 
 const buildQuery = (answers) => {
@@ -14,6 +14,13 @@ const buildQuery = (answers) => {
   return role;
 };
 
+// Cycles under the loading headline so the wait never feels static.
+const LOADING_BEATS = [
+  'Scanning your alumni network…',
+  'Finding the warmest intros…',
+  'Almost there — your network is loading…',
+];
+
 /**
  * Live alumni search powered by exaService. Auto-runs once on mount using a
  * query derived from the user's Act 1 answers — no input required from the
@@ -21,6 +28,7 @@ const buildQuery = (answers) => {
  */
 export default function AlumniDemoSearch({ schoolName, answers, search, searching, results, error, onPick }) {
   const [phase, setPhase] = useState(searching ? 'loading' : results.length > 0 ? 'results' : 'idle');
+  const [beat, setBeat] = useState(0);
   const triedRef = useRef(false);
 
   useEffect(() => {
@@ -40,6 +48,16 @@ export default function AlumniDemoSearch({ schoolName, answers, search, searchin
     else if (triedRef.current) setPhase('empty');
   }, [searching, results.length]);
 
+  // Rotate the loading copy every 1.6s so the wait feels active, not stuck.
+  useEffect(() => {
+    if (phase !== 'loading') return;
+    setBeat(0);
+    const id = setInterval(() => {
+      setBeat((b) => Math.min(LOADING_BEATS.length - 1, b + 1));
+    }, 1600);
+    return () => clearInterval(id);
+  }, [phase]);
+
   const retry = async () => {
     triedRef.current = true;
     setPhase('loading');
@@ -47,6 +65,9 @@ export default function AlumniDemoSearch({ schoolName, answers, search, searchin
     const profiles = await search(q);
     setPhase(profiles.length > 0 ? 'results' : 'empty');
   };
+
+  const matchCount = results.length;
+  const matchWord = matchCount === 1 ? 'match' : 'matches';
 
   return (
     <motion.div
@@ -62,16 +83,48 @@ export default function AlumniDemoSearch({ schoolName, answers, search, searchin
       }}>
         Live · {schoolName || 'Your school'}
       </p>
-      <h1 style={{
-        fontFamily: dmSans, fontSize: 24, fontWeight: 700,
-        color: TEXT, lineHeight: 1.25, margin: '0 0 8px', letterSpacing: '-0.01em',
-      }}>
-        {phase === 'loading' && 'Scanning your alumni network…'}
-        {phase === 'results' && 'Pick the one you want to message first.'}
-        {phase === 'empty' && "Couldn't find strong matches yet."}
-      </h1>
+
+      {phase === 'loading' && (
+        <h1 style={{
+          fontFamily: dmSans, fontSize: 24, fontWeight: 700,
+          color: TEXT, lineHeight: 1.25, margin: '0 0 8px', letterSpacing: '-0.01em',
+          minHeight: 60,
+        }}>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={beat}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3 }}
+              style={{ display: 'inline-block' }}
+            >
+              {LOADING_BEATS[beat]}
+            </motion.span>
+          </AnimatePresence>
+        </h1>
+      )}
+      {phase === 'results' && (
+        <h1 style={{
+          fontFamily: dmSans, fontSize: 24, fontWeight: 700,
+          color: TEXT, lineHeight: 1.25, margin: '0 0 8px', letterSpacing: '-0.01em',
+        }}>
+          🎉 <span style={{ color: ORANGE }}>{matchCount} {matchWord}</span> ready for you.
+        </h1>
+      )}
+      {phase === 'empty' && (
+        <h1 style={{
+          fontFamily: dmSans, fontSize: 24, fontWeight: 700,
+          color: TEXT, lineHeight: 1.25, margin: '0 0 8px', letterSpacing: '-0.01em',
+        }}>
+          Let's tweak the search.
+        </h1>
+      )}
+
       <p style={{ fontFamily: dmSans, fontSize: 13, color: MUTED, margin: '0 0 24px' }}>
-        Searching: <span style={{ color: TEXT }}>{buildQuery(answers)}</span>
+        {phase === 'results'
+          ? <>Pick the one you want to message first.</>
+          : <>Searching: <span style={{ color: TEXT }}>{buildQuery(answers)}</span></>}
       </p>
 
       {phase === 'loading' && (
@@ -152,8 +205,8 @@ export default function AlumniDemoSearch({ schoolName, answers, search, searchin
         }}>
           <p style={{ fontFamily: dmSans, fontSize: 14, color: MUTED, lineHeight: 1.6, margin: '0 0 16px' }}>
             {error
-              ? "Network hiccup. Let's try that again."
-              : "We couldn't find a strong match for that exact target. Try a broader role or industry."}
+              ? "Quick network hiccup. One more try should do it."
+              : "We didn't get a strong match for that exact target. A broader role or industry usually unlocks it."}
           </p>
           <button
             onClick={retry}

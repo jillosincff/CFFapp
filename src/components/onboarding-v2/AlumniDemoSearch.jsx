@@ -21,6 +21,21 @@ const LOADING_BEATS = [
   'Almost there — your network is loading…',
 ];
 
+// Sample alum used by the dev-only "skip" button so we can walk through the
+// rest of the funnel on localhost when the live exaService search returns
+// nothing (which it always does for unauthenticated users).
+const buildSampleAlum = (answers) => {
+  const role = (answers.targetRoles || [])[0] || 'Senior Product Manager';
+  const company = (answers.targetCompanies || [])[0] || 'JPMorgan';
+  return {
+    full_name: 'Sarah Chen',
+    headline: `${role} · ${company}`,
+    company,
+    linkedin_url: 'https://linkedin.com/in/sample-alum',
+    cff_user_id: null,
+  };
+};
+
 /**
  * Live alumni search powered by exaService. Auto-runs once on mount using a
  * query derived from the user's Act 1 answers — no input required from the
@@ -218,6 +233,25 @@ export default function AlumniDemoSearch({ schoolName, answers, search, searchin
           >
             Try again
           </button>
+
+          {/* Dev-only escape hatch — when running on localhost without a real
+              authenticated user, exaService can't return alumni. Drop in a
+              sample so the rest of the funnel is walkable. Stripped from prod. */}
+          {import.meta.env.DEV && (
+            <button
+              onClick={() => onPick(buildSampleAlum(answers))}
+              style={{
+                marginTop: 14, padding: '10px 22px', borderRadius: 999,
+                background: 'transparent',
+                border: '1px dashed rgba(255,255,255,0.25)',
+                color: 'rgba(255,255,255,0.55)', fontFamily: dmSans,
+                fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                minHeight: 'auto',
+              }}
+            >
+              Use a sample alum (dev only)
+            </button>
+          )}
         </div>
       )}
 

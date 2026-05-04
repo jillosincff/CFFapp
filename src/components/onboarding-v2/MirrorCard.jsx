@@ -5,8 +5,12 @@ import { dmSans, playfair, ORANGE, SURFACE, BORDER, TEXT, MUTED } from './theme'
  * Reflection screen — no input, just mirror the user's answers back so the
  * flow feels custom-built for them (Mau's principle). Used between question
  * groups in Act 1.
+ *
+ * `proof` is an optional one-liner of social proof shown under the subhead
+ * (e.g. "Other UF juniors hear back within 48 hours."). When set, it renders
+ * with a subtle quote bar so it doesn't compete with the headline.
  */
-export default function MirrorCard({ eyebrow, headline, subhead, onContinue, continueLabel = 'Keep going' }) {
+export default function MirrorCard({ eyebrow, headline, subhead, proof, onContinue, continueLabel = 'Keep going' }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
@@ -42,6 +46,20 @@ export default function MirrorCard({ eyebrow, headline, subhead, onContinue, con
           }}>
             {subhead}
           </p>
+        )}
+        {proof && (
+          <div style={{
+            marginTop: 22, paddingLeft: 14,
+            borderLeft: `2px solid ${ORANGE}`,
+          }}>
+            <p style={{
+              fontFamily: dmSans, fontSize: 12, fontWeight: 600,
+              color: 'rgba(255,255,255,0.72)', lineHeight: 1.55, margin: 0,
+              fontStyle: 'italic',
+            }}>
+              {proof}
+            </p>
+          </div>
         )}
       </div>
 

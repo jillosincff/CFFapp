@@ -36,6 +36,7 @@ export default function PersonalizedSummary({ answers, onContinue }) {
   const unlock = unlockMicro[answers.unlock] || 'a real introduction';
   const challenge = challengeMicro[answers.challenge] || 'the hardest part of the search';
   const intros = answers.warmIntros || 'few';
+  const firstRole = (answers.targetRoles || [])[0];
 
   return (
     <motion.div
@@ -80,12 +81,34 @@ export default function PersonalizedSummary({ answers, onContinue }) {
       <Bullet text={`Every outreach gets a personalized AI draft — like the one we just made — so you stop staring at a blank LinkedIn box.`} />
       <Bullet text={`Resume tailored per role, interview prep, and follow-up nudges so you actually get replies.`} />
 
+      {/* Final teaser — sets up the post-onboarding dashboard moment so the
+          paywall and free-plan exit both feel like *next steps*, not a wall. */}
+      <div style={{
+        marginTop: 28,
+        background: 'rgba(232,93,32,0.08)',
+        border: `1px solid rgba(232,93,32,0.35)`,
+        borderRadius: 14, padding: '16px 18px',
+        display: 'flex', gap: 12, alignItems: 'flex-start',
+      }}>
+        <span style={{ fontSize: 18, lineHeight: 1.3, marginTop: 1 }}>✨</span>
+        <p style={{
+          fontFamily: dmSans, fontSize: 13, fontWeight: 500,
+          color: 'rgba(255,255,255,0.86)', lineHeight: 1.55, margin: 0,
+        }}>
+          Your answers are already pre-loading your{' '}
+          <strong style={{ color: TEXT }}>tailored resume</strong> and{' '}
+          <strong style={{ color: TEXT }}>LinkedIn refresh
+          {firstRole ? ` for ${firstRole}` : ''}</strong>{' '}
+          — they'll be waiting on your dashboard.
+        </p>
+      </div>
+
       <button
         onClick={onContinue}
         style={{
           width: '100%', padding: '15px 24px', borderRadius: 999, border: 'none',
           background: ORANGE, color: TEXT, fontFamily: dmSans, fontSize: 16,
-          fontWeight: 600, cursor: 'pointer', marginTop: 28, minHeight: 'auto',
+          fontWeight: 600, cursor: 'pointer', marginTop: 24, minHeight: 'auto',
         }}
       >
         I'm in →

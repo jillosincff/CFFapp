@@ -110,6 +110,20 @@ const formatCompanyList = (raw) => {
   return [];
 };
 
+// Short, school-aware nickname used in social proof copy.
+//   "University of Florida" + "Junior" -> "Other UF juniors"
+//   "Stanford University"  + "Senior"  -> "Other Stanford seniors"
+const buildProofLine = (school, year) => {
+  if (!school) return 'Most students hear back from alumni within 48 hours.';
+  const code = deriveSchoolCode(school);
+  const nickname = code ? code.toUpperCase() : school.replace(/^The\s+/i, '').split(/[\s,]+/)[0];
+  const cohort = (year || '').toLowerCase();
+  if (cohort && cohort !== 'recent grad') {
+    return `Other ${nickname} ${cohort}s hear back within 48 hours.`;
+  }
+  return `Other ${nickname} students hear back within 48 hours.`;
+};
+
 export default function StudentOnboardingV2() {
   const { user, refreshUser, isLoadingAuth } = useAuth();
   const params = useParams();
@@ -333,6 +347,7 @@ export default function StudentOnboardingV2() {
           eyebrow="Read back"
           headline={`${answers.firstName || 'You'}, you said ${challengeLine}.`}
           subhead={`That's the #1 thing every ${answers.school || 'college'} student tells us in their first week. Good news: it's also the most fixable.`}
+          proof={buildProofLine(answers.school, answers.year)}
           onContinue={goNext}
         />,
       );
